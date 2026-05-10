@@ -16,6 +16,8 @@ interface UserEntry {
 }
 
 type TabKey = "mutual" | "notFollowBack" | "notFollowingBack";
+type CompareTabKey = "newFollowers" | "unfollowers" | "newFollowing" | "unfollowing";
+type ViewMode = "single" | "compare";
 
 // ─── Helper: extract usernames ───────────────────────
 function parseFollowing(raw: unknown): UserEntry[] {
@@ -43,17 +45,33 @@ function avatarUrl(username: string) {
 
 // ─── Main App ────────────────────────────────────────
 export default function App() {
+  const [viewMode, setViewMode] = useState<ViewMode>("single");
+
+  // Single mode data
   const [followingRaw, setFollowingRaw] = useState("");
   const [followersRaw, setFollowersRaw] = useState("");
+
+  // Compare mode data
+  const [following1Raw, setFollowing1Raw] = useState("");
+  const [followers1Raw, setFollowers1Raw] = useState("");
+  const [following2Raw, setFollowing2Raw] = useState("");
+  const [followers2Raw, setFollowers2Raw] = useState("");
+
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<TabKey>("notFollowBack");
+  const [compareTab, setCompareTab] = useState<CompareTabKey>("unfollowers");
   const [search, setSearch] = useState("");
 
   const fileFollowingRef = useRef<HTMLInputElement>(null);
   const fileFollowersRef = useRef<HTMLInputElement>(null);
+  const fileFollowing1Ref = useRef<HTMLInputElement>(null);
+  const fileFollowers1Ref = useRef<HTMLInputElement>(null);
+  const fileFollowing2Ref = useRef<HTMLInputElement>(null);
+  const fileFollowers2Ref = useRef<HTMLInputElement>(null);
 
   // ── Parse ──────────────────────────────────────────
   const { following, followers } = useMemo(() => {
+    if (viewMode === "compare") return { following: [], followers: [] };
     try {
       const fwing = followingRaw.trim()
         ? parseFollowing(JSON.parse(followingRaw))
@@ -67,7 +85,23 @@ export default function App() {
       setError("Format JSON tidak valid. Periksa kembali data Anda.");
       return { following: [], followers: [] };
     }
-  }, [followingRaw, followersRaw]);
+  }, [followingRaw, followersRaw, viewMode]);
+
+  // ── Parse compare mode data ────────────────────────
+  const { following1, followers1, following2, followers2 } = useMemo(() => {
+    if (viewMode === "single") return { following1: [], followers1: [], following2: [], followers2: [] };
+    try {
+      const fwing1 = following1Raw.trim() ? parseFollowing(JSON.parse(following1Raw)) : [];
+      const fwers1 = followers1Raw.trim() ? parseFollowers(JSON.parse(followers1Raw)) : [];
+      const fwing2 = following2Raw.trim() ? parseFollowing(JSON.parse(following2Raw)) : [];
+      const fwers2 = followers2Raw.trim() ? parseFollowers(JSON.parse(followers2Raw)) : [];
+      setError("");
+      return { following1: fwing1, followers1: fwers1, following2: fwing2, followers2: fwers2 };
+    } catch {
+      setError("Format JSON tidak valid. Periksa kembali data Anda.");
+      return { following1: [], followers1: [], following2: [], followers2: [] };
+    }
+  }, [following1Raw, followers1Raw, following2Raw, followers2Raw, viewMode]);
 
   // ── Compute sets ───────────────────────────────────
   const followingSet = useMemo(() => new Set(following.map((f) => f.username)), [following]);
@@ -86,18 +120,61 @@ export default function App() {
     [followers, followingSet],
   );
 
+  // ── Compute compare mode differences ───────────────
+  const following1Set = useMemo(() => new Set(following1.map((f) => f.username)), [following1]);
+  const followers1Set = useMemo(() => new Set(followers1.map((f) => f.username)), [followers1]);
+  const following2Set = useMemo(() => new Set(following2.map((f) => f.username)), [following2]);
+  const followers2Set = useMemo(() => new Set(followers2.map((f) => f.username)), [followers2]);
+
+  // New followers: in period 2 but not in period 1
+  const newFollowers = useMemo(
+    () => followers2.filter((f) => !followers1Set.has(f.username)),
+    [followers2, followers1Set],
+  );
+
+  // Unfollowers: in period 1 but not in period 2
+  const unfollowers = useMemo(
+    () => followers1.filter((f) => !followers2Set.has(f.username)),
+    [followers1, followers2Set],
+  );
+
+  // New following: in period 2 but not in period 1
+  const newFollowing = useMemo(
+    () => following2.filter((f) => !following1Set.has(f.username)),
+    [following2, following1Set],
+  );
+
+  // Unfollowing: in period 1 but not in period 2
+  const unfollowing = useMemo(
+    () => following1.filter((f) => !following2Set.has(f.username)),
+    [following1, following2Set],
+  );
+
   // ── Filtered lists ─────────────────────────────────
   const filteredData = useMemo(() => {
     const q = search.toLowerCase().trim();
-    const tabMap: Record<TabKey, UserEntry[]> = {
-      mutual,
-      notFollowBack,
-      notFollowingBack,
-    };
-    const list = tabMap[activeTab];
-    if (!q) return list;
-    return list.filter((u) => u.username.includes(q));
-  }, [search, activeTab, mutual, notFollowBack, notFollowingBack]);
+
+    if (viewMode === "single") {
+      const tabMap: Record<TabKey, UserEntry[]> = {
+        mutual,
+        notFollowBack,
+        notFollowingBack,
+      };
+      const list = tabMap[activeTab];
+      if (!q) return list;
+      return list.filter((u) => u.username.includes(q));
+    } else {
+      const compareTabMap: Record<CompareTabKey, UserEntry[]> = {
+        newFollowers,
+        unfollowers,
+        newFollowing,
+        unfollowing,
+      };
+      const list = compareTabMap[compareTab];
+      if (!q) return list;
+      return list.filter((u) => u.username.includes(q));
+    }
+  }, [search, viewMode, activeTab, compareTab, mutual, notFollowBack, notFollowingBack, newFollowers, unfollowers, newFollowing, unfollowing]);
 
   // ── File upload handlers ───────────────────────────
   function handleFileUpload(
@@ -115,6 +192,13 @@ export default function App() {
     { key: "notFollowBack", label: "Tidak Follow Back", count: notFollowBack.length, color: "rose" },
     { key: "notFollowingBack", label: "Tidak Kamu Follow Back", count: notFollowingBack.length, color: "amber" },
     { key: "mutual", label: "Saling Follow", count: mutual.length, color: "emerald" },
+  ];
+
+  const compareTabs: { key: CompareTabKey; label: string; count: number; color: string }[] = [
+    { key: "unfollowers", label: "Yang Unfollow Kamu", count: unfollowers.length, color: "rose" },
+    { key: "newFollowers", label: "Follower Baru", count: newFollowers.length, color: "emerald" },
+    { key: "unfollowing", label: "Yang Kamu Unfollow", count: unfollowing.length, color: "amber" },
+    { key: "newFollowing", label: "Following Baru", count: newFollowing.length, color: "cyan" },
   ];
 
   // ── Render ─────────────────────────────────────────
@@ -138,78 +222,252 @@ export default function App() {
           </p>
         </header>
 
-        {/* ── Input Section ──────────────────────────── */}
-        <div className="mb-6 grid gap-6 lg:grid-cols-2">
-          {/* Following Input */}
-          <div className="glass-card rounded-2xl p-5">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-500/30 text-xs">👤</span>
-                Data Following
-              </h2>
-              <button
-                onClick={() => fileFollowingRef.current?.click()}
-                className="glass-btn text-xs"
-              >
-                📁 Upload JSON
-              </button>
-              <input
-                ref={fileFollowingRef}
-                type="file"
-                accept=".json,application/json"
-                className="hidden"
-                onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowingRaw)}
-              />
-            </div>
-            <textarea
-              value={followingRaw}
-              onChange={(e) => setFollowingRaw(e.target.value)}
-              placeholder='Paste JSON "relationships_following" di sini...'
-              className="glass-input h-40 w-full resize-none rounded-xl p-3 text-sm text-white/90 placeholder:text-white/30"
-              spellCheck={false}
-            />
-            {following.length > 0 && (
-              <p className="mt-2 text-xs text-indigo-300">
-                ✅ {following.length} akun terdeteksi
-              </p>
-            )}
-          </div>
-
-          {/* Followers Input */}
-          <div className="glass-card rounded-2xl p-5">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-violet-500/30 text-xs">👥</span>
-                Data Followers
-              </h2>
-              <button
-                onClick={() => fileFollowersRef.current?.click()}
-                className="glass-btn text-xs"
-              >
-                📁 Upload JSON
-              </button>
-              <input
-                ref={fileFollowersRef}
-                type="file"
-                accept=".json,application/json"
-                className="hidden"
-                onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowersRaw)}
-              />
-            </div>
-            <textarea
-              value={followersRaw}
-              onChange={(e) => setFollowersRaw(e.target.value)}
-              placeholder='Paste JSON followers di sini...'
-              className="glass-input h-40 w-full resize-none rounded-xl p-3 text-sm text-white/90 placeholder:text-white/30"
-              spellCheck={false}
-            />
-            {followers.length > 0 && (
-              <p className="mt-2 text-xs text-violet-300">
-                ✅ {followers.length} akun terdeteksi
-              </p>
-            )}
-          </div>
+        {/* ── Mode Selector ──────────────────────────── */}
+        <div className="glass-card mb-6 rounded-2xl p-1 flex gap-1">
+          <button
+            onClick={() => {
+              setViewMode("single");
+              setSearch("");
+              setError("");
+            }}
+            className={`flex-1 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
+              viewMode === "single"
+                ? "bg-white/15 text-white shadow-lg shadow-black/20"
+                : "text-white/50 hover:text-white/80"
+            }`}
+          >
+            📸 Mode Tunggal
+          </button>
+          <button
+            onClick={() => {
+              setViewMode("compare");
+              setSearch("");
+              setError("");
+            }}
+            className={`flex-1 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
+              viewMode === "compare"
+                ? "bg-white/15 text-white shadow-lg shadow-black/20"
+                : "text-white/50 hover:text-white/80"
+            }`}
+          >
+            🔄 Mode Perbandingan
+          </button>
         </div>
+
+        {/* ── Input Section ──────────────────────────── */}
+        {viewMode === "single" ? (
+          <div className="mb-6 grid gap-6 lg:grid-cols-2">
+            {/* Following Input */}
+            <div className="glass-card rounded-2xl p-5">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-500/30 text-xs">👤</span>
+                  Data Following
+                </h2>
+                <button
+                  onClick={() => fileFollowingRef.current?.click()}
+                  className="glass-btn text-xs"
+                >
+                  📁 Upload JSON
+                </button>
+                <input
+                  ref={fileFollowingRef}
+                  type="file"
+                  accept=".json,application/json"
+                  className="hidden"
+                  onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowingRaw)}
+                />
+              </div>
+              <textarea
+                value={followingRaw}
+                onChange={(e) => setFollowingRaw(e.target.value)}
+                placeholder='Paste JSON "relationships_following" di sini...'
+                className="glass-input h-40 w-full resize-none rounded-xl p-3 text-sm text-white/90 placeholder:text-white/30"
+                spellCheck={false}
+              />
+              {following.length > 0 && (
+                <p className="mt-2 text-xs text-indigo-300">
+                  ✅ {following.length} akun terdeteksi
+                </p>
+              )}
+            </div>
+
+            {/* Followers Input */}
+            <div className="glass-card rounded-2xl p-5">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-sm font-semibold text-white">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-violet-500/30 text-xs">👥</span>
+                  Data Followers
+                </h2>
+                <button
+                  onClick={() => fileFollowersRef.current?.click()}
+                  className="glass-btn text-xs"
+                >
+                  📁 Upload JSON
+                </button>
+                <input
+                  ref={fileFollowersRef}
+                  type="file"
+                  accept=".json,application/json"
+                  className="hidden"
+                  onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowersRaw)}
+                />
+              </div>
+              <textarea
+                value={followersRaw}
+                onChange={(e) => setFollowersRaw(e.target.value)}
+                placeholder='Paste JSON followers di sini...'
+                className="glass-input h-40 w-full resize-none rounded-xl p-3 text-sm text-white/90 placeholder:text-white/30"
+                spellCheck={false}
+              />
+              {followers.length > 0 && (
+                <p className="mt-2 text-xs text-violet-300">
+                  ✅ {followers.length} akun terdeteksi
+                </p>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="mb-6 space-y-6">
+            {/* Period 1 */}
+            <div className="glass-card rounded-2xl p-5">
+              <h3 className="mb-4 text-center text-sm font-semibold text-white">
+                📅 Periode 1 (Data Lama)
+              </h3>
+              <div className="grid gap-4 lg:grid-cols-2">
+                <div>
+                  <div className="mb-2 flex items-center justify-between">
+                    <h4 className="text-xs font-medium text-white/80">Following Periode 1</h4>
+                    <button
+                      onClick={() => fileFollowing1Ref.current?.click()}
+                      className="glass-btn text-xs"
+                    >
+                      📁 Upload
+                    </button>
+                    <input
+                      ref={fileFollowing1Ref}
+                      type="file"
+                      accept=".json,application/json"
+                      className="hidden"
+                      onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowing1Raw)}
+                    />
+                  </div>
+                  <textarea
+                    value={following1Raw}
+                    onChange={(e) => setFollowing1Raw(e.target.value)}
+                    placeholder="Paste JSON following periode 1..."
+                    className="glass-input h-32 w-full resize-none rounded-xl p-3 text-sm text-white/90 placeholder:text-white/30"
+                    spellCheck={false}
+                  />
+                  {following1.length > 0 && (
+                    <p className="mt-1 text-xs text-indigo-300">
+                      ✅ {following1.length} akun
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <div className="mb-2 flex items-center justify-between">
+                    <h4 className="text-xs font-medium text-white/80">Followers Periode 1</h4>
+                    <button
+                      onClick={() => fileFollowers1Ref.current?.click()}
+                      className="glass-btn text-xs"
+                    >
+                      📁 Upload
+                    </button>
+                    <input
+                      ref={fileFollowers1Ref}
+                      type="file"
+                      accept=".json,application/json"
+                      className="hidden"
+                      onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowers1Raw)}
+                    />
+                  </div>
+                  <textarea
+                    value={followers1Raw}
+                    onChange={(e) => setFollowers1Raw(e.target.value)}
+                    placeholder="Paste JSON followers periode 1..."
+                    className="glass-input h-32 w-full resize-none rounded-xl p-3 text-sm text-white/90 placeholder:text-white/30"
+                    spellCheck={false}
+                  />
+                  {followers1.length > 0 && (
+                    <p className="mt-1 text-xs text-violet-300">
+                      ✅ {followers1.length} akun
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Period 2 */}
+            <div className="glass-card rounded-2xl p-5">
+              <h3 className="mb-4 text-center text-sm font-semibold text-white">
+                📅 Periode 2 (Data Baru)
+              </h3>
+              <div className="grid gap-4 lg:grid-cols-2">
+                <div>
+                  <div className="mb-2 flex items-center justify-between">
+                    <h4 className="text-xs font-medium text-white/80">Following Periode 2</h4>
+                    <button
+                      onClick={() => fileFollowing2Ref.current?.click()}
+                      className="glass-btn text-xs"
+                    >
+                      📁 Upload
+                    </button>
+                    <input
+                      ref={fileFollowing2Ref}
+                      type="file"
+                      accept=".json,application/json"
+                      className="hidden"
+                      onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowing2Raw)}
+                    />
+                  </div>
+                  <textarea
+                    value={following2Raw}
+                    onChange={(e) => setFollowing2Raw(e.target.value)}
+                    placeholder="Paste JSON following periode 2..."
+                    className="glass-input h-32 w-full resize-none rounded-xl p-3 text-sm text-white/90 placeholder:text-white/30"
+                    spellCheck={false}
+                  />
+                  {following2.length > 0 && (
+                    <p className="mt-1 text-xs text-indigo-300">
+                      ✅ {following2.length} akun
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <div className="mb-2 flex items-center justify-between">
+                    <h4 className="text-xs font-medium text-white/80">Followers Periode 2</h4>
+                    <button
+                      onClick={() => fileFollowers2Ref.current?.click()}
+                      className="glass-btn text-xs"
+                    >
+                      📁 Upload
+                    </button>
+                    <input
+                      ref={fileFollowers2Ref}
+                      type="file"
+                      accept=".json,application/json"
+                      className="hidden"
+                      onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowers2Raw)}
+                    />
+                  </div>
+                  <textarea
+                    value={followers2Raw}
+                    onChange={(e) => setFollowers2Raw(e.target.value)}
+                    placeholder="Paste JSON followers periode 2..."
+                    className="glass-input h-32 w-full resize-none rounded-xl p-3 text-sm text-white/90 placeholder:text-white/30"
+                    spellCheck={false}
+                  />
+                  {followers2.length > 0 && (
+                    <p className="mt-1 text-xs text-violet-300">
+                      ✅ {followers2.length} akun
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── Error ──────────────────────────────────── */}
         {error && (
@@ -219,7 +477,7 @@ export default function App() {
         )}
 
         {/* ── Statistics Cards ───────────────────────── */}
-        {following.length > 0 && followers.length > 0 && (
+        {viewMode === "single" && following.length > 0 && followers.length > 0 && (
           <>
             <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
               <StatCard label="Following" value={following.length} icon="👤" />
@@ -307,8 +565,97 @@ export default function App() {
           </>
         )}
 
+        {/* ── Compare Mode Statistics & Results ──────── */}
+        {viewMode === "compare" && following1.length > 0 && followers1.length > 0 && following2.length > 0 && followers2.length > 0 && (
+          <>
+            <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <StatCard label="Follower Baru" value={newFollowers.length} icon="✨" highlight />
+              <StatCard label="Yang Unfollow" value={unfollowers.length} icon="💔" />
+              <StatCard label="Following Baru" value={newFollowing.length} icon="➕" />
+              <StatCard label="Yang Di-unfollow" value={unfollowing.length} icon="➖" />
+            </div>
+
+            {/* ── Compare Tabs ────────────────────────── */}
+            <div className="glass-card mb-4 rounded-2xl p-1 flex flex-wrap gap-1">
+              {compareTabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => {
+                    setCompareTab(tab.key);
+                    setSearch("");
+                  }}
+                  className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
+                    compareTab === tab.key
+                      ? "bg-white/15 text-white shadow-lg shadow-black/20"
+                      : "text-white/50 hover:text-white/80"
+                  }`}
+                >
+                  {tab.label}
+                  <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white/10 px-1.5 text-xs">
+                    {tab.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* ── Search ──────────────────────────────── */}
+            <div className="glass-card mb-4 rounded-xl p-3">
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={`🔍 Cari username di daftar "${compareTabs.find((t) => t.key === compareTab)?.label}"...`}
+                className="glass-input w-full rounded-lg px-4 py-2 text-sm text-white/90 placeholder:text-white/30"
+              />
+            </div>
+
+            {/* ── User List ───────────────────────────── */}
+            <div className="glass-card rounded-2xl p-4">
+              {filteredData.length === 0 ? (
+                <div className="py-16 text-center text-white/40">
+                  <div className="mb-2 text-4xl">📭</div>
+                  <p className="text-sm">
+                    {search.trim()
+                      ? "Tidak ada username yang cocok"
+                      : "Tidak ada perubahan"}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+                  {filteredData.map((user) => (
+                    <a
+                      key={user.username}
+                      href={`https://instagram.com/${user.username}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex flex-col items-center gap-2 rounded-xl bg-white/5 p-3 transition-all duration-200 hover:bg-white/10 hover:scale-[1.03]"
+                    >
+                      <div className="relative">
+                        <img
+                          src={avatarUrl(user.username)}
+                          alt={user.username}
+                          className="h-14 w-14 rounded-full ring-2 ring-white/10 transition-all group-hover:ring-white/30"
+                          loading="lazy"
+                        />
+                      </div>
+                      <span className="truncate w-full text-center text-xs font-medium text-white/80 group-hover:text-white">
+                        @{user.username}
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              )}
+              {filteredData.length > 0 && (
+                <p className="mt-3 text-center text-xs text-white/30">
+                  Menampilkan {filteredData.length} akun
+                </p>
+              )}
+            </div>
+          </>
+        )}
+
         {/* ── Empty state ────────────────────────────── */}
-        {following.length === 0 && followers.length === 0 && !error && (
+        {viewMode === "single" && following.length === 0 && followers.length === 0 && !error && (
           <div className="glass-card rounded-2xl p-12 text-center">
             <div className="mb-3 text-5xl">📂</div>
             <p className="text-white/60">
@@ -317,6 +664,18 @@ export default function App() {
             </p>
             <p className="mt-2 text-xs text-white/30">
               Data bisa didapat dari fitur Download Data di Instagram
+            </p>
+          </div>
+        )}
+
+        {viewMode === "compare" && (following1.length === 0 || followers1.length === 0 || following2.length === 0 || followers2.length === 0) && !error && (
+          <div className="glass-card rounded-2xl p-12 text-center">
+            <div className="mb-3 text-5xl">🔄</div>
+            <p className="text-white/60">
+              Upload data <strong>Periode 1</strong> dan <strong>Periode 2</strong> untuk melihat perubahan koneksi Instagram Anda.
+            </p>
+            <p className="mt-2 text-xs text-white/30">
+              Periode 1 = Data lama | Periode 2 = Data baru
             </p>
           </div>
         )}
