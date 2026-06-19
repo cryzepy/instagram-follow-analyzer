@@ -22,7 +22,10 @@ Compare two time periods to see connection changes:
 - 🔍 Real-time username search
 - 🆕 Sort by newest/oldest (by follow timestamp)
 - 🖱️ Drag & drop JSON file upload
-- 📱 Responsive design (mobile-friendly)
+- 🌐 Multi-language support (English & Indonesian) with auto-detect browser language
+- 🏳️ SVG flag icons (inline, no emoji dependency)
+- 📅 Dynamic date format (en-US / id-ID) based on selected language
+- 📱 Responsive design with hamburger menu (mobile-friendly)
 - 🖼️ Profile photos from Instagram (with SVG fallback on error)
 - 🔗 Direct link to Instagram profiles
 - 💾 Data persistence via localStorage (survives page refresh)
@@ -70,6 +73,9 @@ Compare two time periods to see connection changes:
 
 ```
 src/
+├── assets/
+│   └── icons/
+│       └── logo.svg              # App logo/icon
 ├── types/
 │   └── index.ts              # Shared TypeScript types & interfaces
 ├── utils/
@@ -78,16 +84,26 @@ src/
 │   └── format.ts             # Date formatting utility
 ├── hooks/
 │   └── useLocalStorage.ts    # localStorage persistence hook
+├── contexts/
+│   └── LangContext.tsx        # Language provider & useLang hook
+├── translations/
+│   └── index.ts              # English & Indonesian translations
 ├── components/
 │   ├── AvatarImg.tsx         # Profile photo with SVG fallback
-│   ├── DropZone.tsx          # Drag & drop file upload wrapper
-│   ├── StatCard.tsx          # Statistics display card
-│   ├── UserCard.tsx          # User avatar + username card
-│   ├── DataCard.tsx          # Data upload area preview card
 │   ├── ConfirmModal.tsx      # Clear data confirmation modal
-│   └── JsonPreviewModal.tsx  # Raw JSON preview modal
+│   ├── DataCard.tsx          # Data upload area preview card
+│   ├── DropZone.tsx          # Drag & drop file upload wrapper
+│   ├── JsonPreviewModal.tsx  # Raw JSON preview modal
+│   ├── Navbar.tsx            # Sticky navbar with logo, lang toggle, hamburger
+│   ├── StatCard.tsx          # Statistics display card
+│   └── UserCard.tsx          # User avatar + username card
+├── contexts/
+│   └── LangContext.tsx        # Language provider & useLang hook
+├── translations/
+│   └── index.ts              # English & Indonesian translations
 ├── index.css                 # Global styles & glassmorphism
 ├── main.tsx                  # App entry point
+├── vite-env.d.ts             # Vite & SVG type declarations
 └── App.tsx                   # Main app logic & layout
 ```
 

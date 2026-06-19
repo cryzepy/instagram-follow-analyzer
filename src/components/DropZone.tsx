@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useLang } from "../contexts/LangContext";
 
 export function DropZone({
   onFile,
@@ -7,6 +8,7 @@ export function DropZone({
   onFile: (content: string) => void;
   children: React.ReactNode;
 }) {
+  const { t } = useLang();
   const [isDragging, setIsDragging] = useState(false);
   const dragCounter = useRef(0);
 
@@ -62,9 +64,7 @@ export function DropZone({
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-xl border-2 border-dashed border-indigo-400/60 bg-indigo-500/25 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-2">
             <span className="text-3xl">📥</span>
-            <p className="text-sm font-medium text-white">
-              Drop your JSON file here
-            </p>
+            <p className="text-sm font-medium text-white">{t.dropJsonHere}</p>
           </div>
         </div>
       )}

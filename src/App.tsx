@@ -8,10 +8,13 @@ import { StatCard } from "./components/StatCard";
 import { UserCard } from "./components/UserCard";
 import { ConfirmModal } from "./components/ConfirmModal";
 import { JsonPreviewModal } from "./components/JsonPreviewModal";
+import { Navbar } from "./components/Navbar";
+import { useLang } from "./contexts/LangContext";
 
 const STORAGE_KEY = "ig-analyzer";
 
 export default function App() {
+  const { t } = useLang();
   const [viewMode, setViewMode] = useLocalStorage<ViewMode>("viewMode", "single", STORAGE_KEY);
 
   // Single mode data
@@ -48,10 +51,10 @@ export default function App() {
       setError("");
       return { following: fwing, followers: fwers };
     } catch {
-      setError("Invalid JSON format. Please check your data.");
+      setError(t.invalidJson);
       return { following: [], followers: [] };
     }
-  }, [followingRaw, followersRaw, viewMode]);
+  }, [followingRaw, followersRaw, viewMode, t.invalidJson]);
 
   // ── Parse compare mode ─────────────────────────────
   const { following1, followers1, following2, followers2 } = useMemo(() => {
@@ -64,10 +67,10 @@ export default function App() {
       setError("");
       return { following1: fwing1, followers1: fwers1, following2: fwing2, followers2: fwers2 };
     } catch {
-      setError("Invalid JSON format. Please check your data.");
+      setError(t.invalidJson);
       return { following1: [], followers1: [], following2: [], followers2: [] };
     }
-  }, [following1Raw, followers1Raw, following2Raw, followers2Raw, viewMode]);
+  }, [following1Raw, followers1Raw, following2Raw, followers2Raw, viewMode, t.invalidJson]);
 
   // ── Compute sets ───────────────────────────────────
   const followingSet = useMemo(() => new Set(following.map((f) => f.username)), [following]);
@@ -113,18 +116,21 @@ export default function App() {
     reader.readAsText(file);
   }
 
-  // ── Tab config ─────────────────────────────────────
+  // ── Tab config (translated) ────────────────────────
   const tabs: { key: TabKey; label: string; count: number }[] = [
-    { key: "notFollowBack", label: "Not Following Back", count: notFollowBack.length },
-    { key: "notFollowingBack", label: "Not Followed Back", count: notFollowingBack.length },
-    { key: "mutual", label: "Mutuals", count: mutual.length },
+    { key: "notFollowBack", label: t.notFollowingBack, count: notFollowBack.length },
+    { key: "notFollowingBack", label: t.notFollowedBack, count: notFollowingBack.length },
+    { key: "mutual", label: t.mutuals, count: mutual.length },
   ];
   const compareTabs: { key: CompareTabKey; label: string; count: number }[] = [
-    { key: "unfollowers", label: "Unfollowers", count: unfollowers.length },
-    { key: "newFollowers", label: "New Followers", count: newFollowers.length },
-    { key: "unfollowing", label: "Unfollowed", count: unfollowing.length },
-    { key: "newFollowing", label: "New Following", count: newFollowing.length },
+    { key: "unfollowers", label: t.statUnfollowers, count: unfollowers.length },
+    { key: "newFollowers", label: t.statNewFollowers, count: newFollowers.length },
+    { key: "unfollowing", label: t.statUnfollowed, count: unfollowing.length },
+    { key: "newFollowing", label: t.statNewFollowing, count: newFollowing.length },
   ];
+
+  const activeTabLabel = tabs.find((t) => t.key === activeTab)?.label ?? "";
+  const activeCompareLabel = compareTabs.find((ct) => ct.key === compareTab)?.label ?? "";
 
   // ── Render ─────────────────────────────────────────
   return (
@@ -135,23 +141,12 @@ export default function App() {
         <div className="absolute left-1/3 top-1/3 h-64 w-64 rounded-full bg-cyan-500/15 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-10">
-        {/* ── Header ────────────────────────────────── */}
-        <header className="mb-8 text-center">
-          <h1 className="bg-gradient-to-r from-white via-indigo-200 to-white bg-clip-text text-3xl font-bold text-transparent sm:text-4xl">
-            📊 Instagram Follow Analyzer
-          </h1>
-          <p className="mt-2 text-sm text-indigo-300/80">
-            Analyze who doesn't follow back and who are mutuals
-          </p>
-          <button
-            onClick={() => setShowConfirm(true)}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 text-xs text-white/40 transition-all hover:bg-rose-500/20 hover:text-rose-300"
-            title="Clear all saved data (localStorage)"
-          >
-            🗑️ Clear Data
-          </button>
-        </header>
+      <div className="relative mx-auto max-w-6xl px-4 py-4 sm:px-6 lg:px-10">
+        {/* ── Navbar ─────────────────────────────────── */}
+        <Navbar onClearData={() => setShowConfirm(true)} />
+
+        {/* ── Subtitle ───────────────────────────────── */}
+        <p className="mb-6 text-center text-sm text-indigo-300/80">{t.subtitle}</p>
 
         {/* ── Mode Selector ─────────────────────────── */}
         <div className="glass-card mb-6 rounded-xl p-1 flex gap-1">
@@ -161,7 +156,7 @@ export default function App() {
               viewMode === "single" ? "bg-white/15 text-white shadow-lg shadow-black/20" : "text-white/50 hover:text-white/80"
             }`}
           >
-            📸 Single Mode
+            📸 {t.singleMode}
           </button>
           <button
             onClick={() => { setViewMode("compare"); setSearch(""); setError(""); }}
@@ -169,7 +164,7 @@ export default function App() {
               viewMode === "compare" ? "bg-white/15 text-white shadow-lg shadow-black/20" : "text-white/50 hover:text-white/80"
             }`}
           >
-            🔄 Compare Mode
+            🔄 {t.compareMode}
           </button>
         </div>
 
@@ -177,13 +172,13 @@ export default function App() {
         {viewMode === "single" ? (
           <div className="mb-6 grid gap-6 lg:grid-cols-2">
             <DropZone onFile={setFollowingRaw}>
-              <DataCard label="Data Following" icon="👤" raw={followingRaw} data={following}
+              <DataCard label={t.dataFollowing} icon="👤" raw={followingRaw} data={following}
                 onUpload={() => fileFollowingRef.current?.click()} onPreview={() => setPreviewJson(followingRaw)} />
               <input ref={fileFollowingRef} type="file" accept=".json,application/json" className="hidden"
                 onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowingRaw)} />
             </DropZone>
             <DropZone onFile={setFollowersRaw}>
-              <DataCard label="Data Followers" icon="👥" raw={followersRaw} data={followers}
+              <DataCard label={t.dataFollowers} icon="👥" raw={followersRaw} data={followers}
                 onUpload={() => fileFollowersRef.current?.click()} onPreview={() => setPreviewJson(followersRaw)} />
               <input ref={fileFollowersRef} type="file" accept=".json,application/json" className="hidden"
                 onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowersRaw)} />
@@ -192,16 +187,16 @@ export default function App() {
         ) : (
           <div className="mb-6 space-y-6">
             <div className="glass-card rounded-xl p-5">
-              <h3 className="mb-4 text-center text-sm font-semibold text-white">📅 Period 1 (Old Data)</h3>
+              <h3 className="mb-4 text-center text-sm font-semibold text-white">{t.period1}</h3>
               <div className="grid gap-4 lg:grid-cols-2">
                 <DropZone onFile={setFollowing1Raw}>
-                  <DataCard label="Period 1 Following" icon="👤" raw={following1Raw} data={following1}
+                  <DataCard label={t.period1Following} icon="👤" raw={following1Raw} data={following1}
                     onUpload={() => fileFollowing1Ref.current?.click()} onPreview={() => setPreviewJson(following1Raw)} />
                   <input ref={fileFollowing1Ref} type="file" accept=".json,application/json" className="hidden"
                     onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowing1Raw)} />
                 </DropZone>
                 <DropZone onFile={setFollowers1Raw}>
-                  <DataCard label="Period 1 Followers" icon="👥" raw={followers1Raw} data={followers1}
+                  <DataCard label={t.period1Followers} icon="👥" raw={followers1Raw} data={followers1}
                     onUpload={() => fileFollowers1Ref.current?.click()} onPreview={() => setPreviewJson(followers1Raw)} />
                   <input ref={fileFollowers1Ref} type="file" accept=".json,application/json" className="hidden"
                     onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowers1Raw)} />
@@ -209,16 +204,16 @@ export default function App() {
               </div>
             </div>
             <div className="glass-card rounded-xl p-5">
-              <h3 className="mb-4 text-center text-sm font-semibold text-white">📅 Period 2 (New Data)</h3>
+              <h3 className="mb-4 text-center text-sm font-semibold text-white">{t.period2}</h3>
               <div className="grid gap-4 lg:grid-cols-2">
                 <DropZone onFile={setFollowing2Raw}>
-                  <DataCard label="Period 2 Following" icon="👤" raw={following2Raw} data={following2}
+                  <DataCard label={t.period2Following} icon="👤" raw={following2Raw} data={following2}
                     onUpload={() => fileFollowing2Ref.current?.click()} onPreview={() => setPreviewJson(following2Raw)} />
                   <input ref={fileFollowing2Ref} type="file" accept=".json,application/json" className="hidden"
                     onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowing2Raw)} />
                 </DropZone>
                 <DropZone onFile={setFollowers2Raw}>
-                  <DataCard label="Period 2 Followers" icon="👥" raw={followers2Raw} data={followers2}
+                  <DataCard label={t.period2Followers} icon="👥" raw={followers2Raw} data={followers2}
                     onUpload={() => fileFollowers2Ref.current?.click()} onPreview={() => setPreviewJson(followers2Raw)} />
                   <input ref={fileFollowers2Ref} type="file" accept=".json,application/json" className="hidden"
                     onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowers2Raw)} />
@@ -239,10 +234,10 @@ export default function App() {
         {viewMode === "single" && following.length > 0 && followers.length > 0 && (
           <>
             <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <StatCard label="Following" value={following.length} icon="👤" />
-              <StatCard label="Followers" value={followers.length} icon="👥" />
-              <StatCard label="Mutuals" value={mutual.length} icon="🤝" />
-              <StatCard label="Not Following Back" value={notFollowBack.length} icon="⚠️" highlight />
+              <StatCard label={t.statFollowing} value={following.length} icon="👤" />
+              <StatCard label={t.statFollowers} value={followers.length} icon="👥" />
+              <StatCard label={t.statMutuals} value={mutual.length} icon="🤝" />
+              <StatCard label={t.statNotFollowingBack} value={notFollowBack.length} icon="⚠️" highlight />
             </div>
             <div className="glass-card mb-4 rounded-xl p-1 flex flex-wrap gap-1">
               {tabs.map((tab) => (
@@ -261,15 +256,15 @@ export default function App() {
               <div className="flex gap-2">
                 <input type="text" value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder={`🔍 Search username in "${tabs.find((t) => t.key === activeTab)?.label}"...`}
+                  placeholder={t.searchPlaceholder.replace("{label}", activeTabLabel)}
                   className="glass-input flex-1 rounded-md px-4 py-2 text-sm text-white/90 placeholder:text-white/30" />
                 <button onClick={() => setSortNewest((v) => !v)}
                   className={`flex shrink-0 items-center gap-1 rounded-md px-3 py-2 text-xs font-medium transition-all ${
                     sortNewest ? "bg-indigo-500/30 text-indigo-200" : "bg-white/5 text-white/50 hover:text-white/80"
                   }`}
-                  title={sortNewest ? "Newest → Oldest" : "Oldest → Newest"}
+                  title={sortNewest ? t.sortNewestTitle : t.sortOldestTitle}
                 >
-                  {sortNewest ? "🆕 Newest" : "📅 Oldest"}
+                  {sortNewest ? `🆕 ${t.newest}` : `📅 ${t.oldest}`}
                 </button>
               </div>
             </div>
@@ -277,7 +272,7 @@ export default function App() {
               {filteredData.length === 0 ? (
                 <div className="py-16 text-center text-white/40">
                   <div className="mb-2 text-4xl">📭</div>
-                  <p className="text-sm">{search.trim() ? "No matching username" : "Empty list"}</p>
+                  <p className="text-sm">{search.trim() ? t.noMatchingUsername : t.emptyList}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
@@ -285,7 +280,7 @@ export default function App() {
                 </div>
               )}
               {filteredData.length > 0 && (
-                <p className="mt-3 text-center text-xs text-white/30">Showing {filteredData.length} accounts</p>
+                <p className="mt-3 text-center text-xs text-white/30">{t.showingAccounts.replace("{count}", filteredData.length.toLocaleString())}</p>
               )}
             </div>
           </>
@@ -295,10 +290,10 @@ export default function App() {
         {viewMode === "compare" && following1.length > 0 && followers1.length > 0 && following2.length > 0 && followers2.length > 0 && (
           <>
             <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <StatCard label="New Followers" value={newFollowers.length} icon="✨" highlight />
-              <StatCard label="Unfollowers" value={unfollowers.length} icon="💔" />
-              <StatCard label="New Following" value={newFollowing.length} icon="➕" />
-              <StatCard label="Unfollowed" value={unfollowing.length} icon="➖" />
+              <StatCard label={t.statNewFollowers} value={newFollowers.length} icon="✨" highlight />
+              <StatCard label={t.statUnfollowers} value={unfollowers.length} icon="💔" />
+              <StatCard label={t.statNewFollowing} value={newFollowing.length} icon="➕" />
+              <StatCard label={t.statUnfollowed} value={unfollowing.length} icon="➖" />
             </div>
             <div className="glass-card mb-4 rounded-xl p-1 flex flex-wrap gap-1">
               {compareTabs.map((tab) => (
@@ -317,15 +312,15 @@ export default function App() {
               <div className="flex gap-2">
                 <input type="text" value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder={`🔍 Search username in "${compareTabs.find((t) => t.key === compareTab)?.label}"...`}
+                  placeholder={t.searchPlaceholder.replace("{label}", activeCompareLabel)}
                   className="glass-input flex-1 rounded-md px-4 py-2 text-sm text-white/90 placeholder:text-white/30" />
                 <button onClick={() => setSortNewest((v) => !v)}
                   className={`flex shrink-0 items-center gap-1 rounded-md px-3 py-2 text-xs font-medium transition-all ${
                     sortNewest ? "bg-indigo-500/30 text-indigo-200" : "bg-white/5 text-white/50 hover:text-white/80"
                   }`}
-                  title={sortNewest ? "Newest → Oldest" : "Oldest → Newest"}
+                  title={sortNewest ? t.sortNewestTitle : t.sortOldestTitle}
                 >
-                  {sortNewest ? "🆕 Newest" : "📅 Oldest"}
+                  {sortNewest ? `🆕 ${t.newest}` : `📅 ${t.oldest}`}
                 </button>
               </div>
             </div>
@@ -333,7 +328,7 @@ export default function App() {
               {filteredData.length === 0 ? (
                 <div className="py-16 text-center text-white/40">
                   <div className="mb-2 text-4xl">📭</div>
-                  <p className="text-sm">{search.trim() ? "No matching username" : "No changes found"}</p>
+                  <p className="text-sm">{search.trim() ? t.noMatchingUsername : t.noChangesFound}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
@@ -341,7 +336,7 @@ export default function App() {
                 </div>
               )}
               {filteredData.length > 0 && (
-                <p className="mt-3 text-center text-xs text-white/30">Showing {filteredData.length} accounts</p>
+                <p className="mt-3 text-center text-xs text-white/30">{t.showingAccounts.replace("{count}", filteredData.length.toLocaleString())}</p>
               )}
             </div>
           </>
@@ -351,15 +346,15 @@ export default function App() {
         {viewMode === "single" && following.length === 0 && followers.length === 0 && !error && (
           <div className="glass-card rounded-xl p-12 text-center">
             <div className="mb-3 text-5xl">📂</div>
-            <p className="text-white/60">Upload your Instagram <strong>Following</strong> and <strong>Followers</strong> JSON data to start analyzing.</p>
-            <p className="mt-2 text-xs text-white/30">You can get this data from Instagram's Download Your Information feature</p>
+            <p className="text-white/60" dangerouslySetInnerHTML={{ __html: t.uploadPromptSingle }} />
+            <p className="mt-2 text-xs text-white/30">{t.uploadHint}</p>
           </div>
         )}
         {viewMode === "compare" && (following1.length === 0 || followers1.length === 0 || following2.length === 0 || followers2.length === 0) && !error && (
           <div className="glass-card rounded-xl p-12 text-center">
             <div className="mb-3 text-5xl">🔄</div>
-            <p className="text-white/60">Upload your <strong>Period 1</strong> and <strong>Period 2</strong> data to see your Instagram connection changes.</p>
-            <p className="mt-2 text-xs text-white/30">Period 1 = Old data | Period 2 = New data</p>
+            <p className="text-white/60" dangerouslySetInnerHTML={{ __html: t.uploadPromptCompare }} />
+            <p className="mt-2 text-xs text-white/30">{t.uploadHintCompare}</p>
           </div>
         )}
 

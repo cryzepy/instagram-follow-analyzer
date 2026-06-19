@@ -1,9 +1,11 @@
 import { AvatarImg } from "./AvatarImg";
 import { formatTimestamp } from "../utils/format";
 import type { UserEntry } from "../types";
+import { useLang } from "../contexts/LangContext";
 
 export function UserCard({ user }: { user: UserEntry }) {
-  const date = formatTimestamp(user.timestamp);
+  const { lang } = useLang();
+  const date = formatTimestamp(user.timestamp, lang === "id" ? "id-ID" : "en-US");
   return (
     <a
       href={`https://instagram.com/${user.username}`}

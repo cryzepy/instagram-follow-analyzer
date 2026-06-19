@@ -1,3 +1,5 @@
+import { useLang } from "../contexts/LangContext";
+
 export function JsonPreviewModal({
   json,
   onClose,
@@ -5,6 +7,8 @@ export function JsonPreviewModal({
   json: string;
   onClose: () => void;
 }) {
+  const { t } = useLang();
+
   return (
     <>
       {/* Backdrop */}
@@ -14,7 +18,7 @@ export function JsonPreviewModal({
         <div className="glass-card flex w-full max-w-2xl flex-col rounded-xl">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-            <h3 className="text-sm font-semibold text-white">📄 Raw JSON</h3>
+            <h3 className="text-sm font-semibold text-white">📄 {t.rawJson}</h3>
             <button
               onClick={onClose}
               className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-xs text-white/60 transition-all hover:bg-white/20 hover:text-white"
@@ -30,9 +34,7 @@ export function JsonPreviewModal({
           </div>
           {/* Footer */}
           <div className="flex justify-end border-t border-white/10 px-5 py-3">
-            <button onClick={onClose} className="glass-btn text-xs">
-              Close
-            </button>
+            <button onClick={onClose} className="glass-btn text-xs">{t.close}</button>
           </div>
         </div>
       </div>
