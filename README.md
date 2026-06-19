@@ -1,66 +1,95 @@
 # 📊 Instagram Follow Analyzer
 
-Dashboard visualisasi data Instagram untuk menganalisis hubungan following/followers dan melihat perubahan koneksi dari waktu ke waktu.
+A client-side dashboard to analyze Instagram following/follower relationships and track connection changes over time. All data is processed locally in your browser — nothing is sent to any server.
 
-## ✨ Fitur
+## ✨ Features
 
-### 🎯 Mode Tunggal
-Analisis data Instagram pada satu periode waktu:
-- **Tidak Follow Back** - Menampilkan akun yang kamu follow tapi tidak follow balik
-- **Tidak Kamu Follow Back** - Menampilkan akun yang follow kamu tapi tidak kamu follow balik
-- **Saling Follow** - Menampilkan akun yang saling follow (mutual)
-- Statistik lengkap: total following, followers, mutual, dan yang tidak follow back
+### 🎯 Single Mode
+Analyze Instagram data at a single point in time:
+- **Not Following Back** — Accounts you follow who don't follow you back
+- **Not Followed Back** — Accounts who follow you but you don't follow back
+- **Mutuals** — Accounts that follow each other
+- Full statistics: total following, followers, mutuals, and not following back
 
-### 🔄 Mode Perbandingan
-Bandingkan dua periode waktu untuk melihat perubahan koneksi:
-- **Follower Baru** - Akun yang baru follow kamu (ada di periode 2, tidak ada di periode 1)
-- **Yang Unfollow Kamu** - Akun yang unfollow kamu (ada di periode 1, tidak ada di periode 2)
-- **Following Baru** - Akun yang baru kamu follow (ada di periode 2, tidak ada di periode 1)
-- **Yang Kamu Unfollow** - Akun yang kamu unfollow (ada di periode 1, tidak ada di periode 2)
+### 🔄 Compare Mode
+Compare two time periods to see connection changes:
+- **New Followers** — Accounts that followed you (present in period 2, absent in period 1)
+- **Unfollowers** — Accounts that unfollowed you (present in period 1, absent in period 2)
+- **New Following** — Accounts you started following
+- **Unfollowed** — Accounts you unfollowed
 
-### 🎨 Fitur Tambahan
-- 🔍 Pencarian username real-time
+### 🎨 Additional Features
+- 🔍 Real-time username search
+- 🆕 Sort by newest/oldest (by follow timestamp)
+- 🖱️ Drag & drop JSON file upload
 - 📱 Responsive design (mobile-friendly)
-- 🎭 Avatar otomatis untuk setiap username
-- 🔗 Link langsung ke profil Instagram
-- 🌈 Glassmorphism UI dengan animasi gradient
-- 📁 Upload file JSON atau paste langsung
+- 🖼️ Profile photos from Instagram (with SVG fallback on error)
+- 🔗 Direct link to Instagram profiles
+- 💾 Data persistence via localStorage (survives page refresh)
+- 🌈 Glassmorphism UI with animated gradient
+- 📁 Upload JSON or drag & drop files
+- 🗑️ Clear all saved data with confirmation modal
 
-## 🚀 Cara Menggunakan
+## 🚀 How to Use
 
-### 1. Download Data Instagram
-1. Buka Instagram di browser atau aplikasi
-2. Pergi ke **Settings** → **Privacy and Security** → **Download Your Information**
-3. Pilih format **JSON** dan request data
-4. Tunggu email dari Instagram (biasanya 1-2 hari)
-5. Download dan extract file ZIP
-6. Cari file:
-   - `followers_1.json` (atau `followers.json`) untuk data followers
-   - `following.json` untuk data following
+### 1. Download Your Instagram Data
+1. Open Instagram in your browser or app
+2. Go to **Settings** → **Privacy and Security** → **Download Your Information**
+3. Select **JSON** format and request your data
+4. Wait for the email from Instagram (usually 1-2 days)
+5. Download and extract the ZIP file
+6. Locate these files:
+   - `followers_1.json` (or `followers.json`) for followers data
+   - `following.json` for following data
 
-### 2. Mode Tunggal
-1. Pilih tab **📸 Mode Tunggal**
-2. Upload atau paste JSON **Following** di kolom kiri
-3. Upload atau paste JSON **Followers** di kolom kanan
-4. Lihat hasil analisis di tab yang tersedia
+### 2. Single Mode
+1. Select the **📸 Single Mode** tab
+2. Upload or drop your **Following** JSON data
+3. Upload or drop your **Followers** JSON data
+4. Browse the results in the available tabs
 
-### 3. Mode Perbandingan
-1. Pilih tab **🔄 Mode Perbandingan**
-2. Upload data **Periode 1** (data lama):
-   - Following periode 1
-   - Followers periode 1
-3. Upload data **Periode 2** (data baru):
-   - Following periode 2
-   - Followers periode 2
-4. Lihat perubahan koneksi di tab yang tersedia
+### 3. Compare Mode
+1. Select the **🔄 Compare Mode** tab
+2. Upload **Period 1** (older data):
+   - Period 1 Following JSON
+   - Period 1 Followers JSON
+3. Upload **Period 2** (newer data):
+   - Period 2 Following JSON
+   - Period 2 Followers JSON
+4. See your connection changes in the available tabs
 
 ## 🛠️ Tech Stack
 
-- **React 19** - UI library
-- **TypeScript** - Type safety
-- **Vite** - Build tool & dev server
-- **Tailwind CSS 4** - Styling
-- **vite-plugin-singlefile** - Single HTML output
+- **React 19** — UI library
+- **TypeScript** — Type safety
+- **Vite** — Build tool & dev server
+- **Tailwind CSS 4** — Styling
+- **vite-plugin-singlefile** — Single HTML output
+
+## 📁 Project Structure
+
+```
+src/
+├── types/
+│   └── index.ts              # Shared TypeScript types & interfaces
+├── utils/
+│   ├── cn.ts                 # Tailwind class merge utility
+│   ├── parse.ts              # Instagram JSON parsing helpers
+│   └── format.ts             # Date formatting utility
+├── hooks/
+│   └── useLocalStorage.ts    # localStorage persistence hook
+├── components/
+│   ├── AvatarImg.tsx         # Profile photo with SVG fallback
+│   ├── DropZone.tsx          # Drag & drop file upload wrapper
+│   ├── StatCard.tsx          # Statistics display card
+│   ├── UserCard.tsx          # User avatar + username card
+│   ├── DataCard.tsx          # Data upload area preview card
+│   ├── ConfirmModal.tsx      # Clear data confirmation modal
+│   └── JsonPreviewModal.tsx  # Raw JSON preview modal
+├── index.css                 # Global styles & glassmorphism
+├── main.tsx                  # App entry point
+└── App.tsx                   # Main app logic & layout
+```
 
 ## 💻 Development
 
@@ -79,14 +108,14 @@ npm run dev
 npm run build
 ```
 
-Output akan berupa single HTML file di folder `dist/`.
+Output will be a single HTML file in the `dist/` folder.
 
 ### Preview Production Build
 ```bash
 npm run preview
 ```
 
-## 📝 Format Data JSON
+## 📝 JSON Data Format
 
 ### Following
 ```json
@@ -122,31 +151,27 @@ npm run preview
 
 ## 🎯 Use Cases
 
-### Mode Tunggal
-- Membersihkan following list dengan unfollow akun yang tidak follow back
-- Melihat siapa saja yang saling follow
-- Menemukan akun yang follow kamu tapi belum kamu follow balik
+### Single Mode
+- Clean up your following list by unfollowing accounts that don't follow back
+- See who follows you that you haven't followed back
+- Discover your mutual connections
 
-### Mode Perbandingan
-- Tracking siapa yang unfollow kamu dalam periode tertentu
-- Melihat pertumbuhan followers baru
-- Monitoring aktivitas following/unfollowing kamu sendiri
-- Analisis perubahan engagement dari waktu ke waktu
+### Compare Mode
+- Track who unfollowed you over a specific period
+- Monitor new follower growth
+- Analyze your own following/unfollowing activity
+- Track engagement changes over time
 
 ## 🔒 Privacy & Security
 
-- ✅ Semua data diproses di browser (client-side)
-- ✅ Tidak ada data yang dikirim ke server
-- ✅ Tidak ada tracking atau analytics
-- ✅ Open source - kamu bisa review kode sendiri
+- ✅ All data is processed client-side in your browser
+- ✅ No data is sent to any server
+- ✅ No tracking or analytics
+- ✅ Open source — you can review the code yourself
 
 ## 📄 License
 
-MIT License - bebas digunakan untuk keperluan pribadi atau komersial.
-
-## 🤝 Contributing
-
-Pull requests are welcome! Untuk perubahan besar, silakan buka issue terlebih dahulu untuk diskusi.
+MIT License — free for personal or commercial use.
 
 ---
 
