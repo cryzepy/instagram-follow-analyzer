@@ -85,6 +85,33 @@ export interface Translations {
   // Language toggle
   langEn: string;
   langId: string;
+
+  // Tutorial
+  tutorialTitle: string;
+  tutorialBtn: string;
+  tutorialStep1Title: string;
+  tutorialStep1Desc: string;
+  tutorialStep1_1: string;
+  tutorialStep1_2: string;
+  tutorialStep1_3: string;
+  tutorialStep1_4: string;
+  tutorialStep1_5: string;
+  tutorialStep2Title: string;
+  tutorialStep2Desc: string;
+  tutorialStep2_1: string;
+  tutorialStep2_2: string;
+  tutorialStep2_3: string;
+  tutorialStep3Title: string;
+  tutorialStep3Desc: string;
+  tutorialStep3_single: string;
+  tutorialStep3_compare: string;
+  tutorialStep4Title: string;
+  tutorialStep4Desc: string;
+  tutorialStep4_1: string;
+  tutorialStep4_2: string;
+  tutorialStep4_3: string;
+  tutorialFooter: string;
+  tutorialBack: string;
 }
 
 export const en: Translations = {
@@ -99,8 +126,8 @@ export const en: Translations = {
   compareMode: "Compare Mode",
 
   // Period headers
-  period1: "📅 Period 1 (Old Data)",
-  period2: "📅 Period 2 (New Data)",
+  period1: "Period 1 (Old Data)",
+  period2: "Period 2 (New Data)",
 
   // Data card labels
   dataFollowing: "Data Following",
@@ -128,7 +155,7 @@ export const en: Translations = {
   statUnfollowed: "Unfollowed",
 
   // Search & sort
-  searchPlaceholder: '🔍 Search username in "{label}"...',
+  searchPlaceholder: 'Search username in "{label}"...',
   newest: "Newest",
   oldest: "Oldest",
   sortNewestTitle: "Newest → Oldest",
@@ -174,6 +201,33 @@ export const en: Translations = {
   // Language toggle
   langEn: "EN",
   langId: "ID",
+
+  // Tutorial
+  tutorialTitle: "How to Use Instagram Follow Analyzer",
+  tutorialBtn: "How to Use",
+  tutorialStep1Title: "1. Download Your Instagram Data",
+  tutorialStep1Desc: "Request your data from Instagram's built-in download feature:",
+  tutorialStep1_1: "Open Instagram → Settings → Privacy and Security → Download Your Information",
+  tutorialStep1_2: "Select JSON format and request your data",
+  tutorialStep1_3: "Wait for the email from Instagram (usually 1-2 days)",
+  tutorialStep1_4: "Download and extract the ZIP file",
+  tutorialStep1_5: "Look for followers_1.json (or followers.json) and following.json",
+  tutorialStep2Title: "2. Upload Your Data",
+  tutorialStep2Desc: "You can upload in two ways:",
+  tutorialStep2_1: 'Click the "Upload JSON" button and select your file',
+  tutorialStep2_2: "Drag & drop a .json file directly onto the upload area",
+  tutorialStep2_3: "Or paste the raw JSON content into the text area",
+  tutorialStep3Title: "3. Choose Your Mode",
+  tutorialStep3Desc: "This app has two analysis modes:",
+  tutorialStep3_single: "Single Mode - Analyze your current following/followers relationship. See who doesn't follow back, who you haven't followed back, and mutuals.",
+  tutorialStep3_compare: "Compare Mode - Compare two time periods to track new followers, unfollowers, new following, and unfollowed accounts.",
+  tutorialStep4Title: "4. Explore the Results",
+  tutorialStep4Desc: "Once your data is loaded:",
+  tutorialStep4_1: "Browse accounts using the category tabs (Not Following Back, Mutuals, etc.)",
+  tutorialStep4_2: "Use the search bar to find specific usernames",
+  tutorialStep4_3: "Sort by newest or oldest using the sort toggle",
+  tutorialFooter: "All data is processed locally in your browser. Nothing is sent to any server.",
+  tutorialBack: "Back to App",
 };
 
 export const id: Translations = {
@@ -188,8 +242,8 @@ export const id: Translations = {
   compareMode: "Mode Perbandingan",
 
   // Period headers
-  period1: "📅 Periode 1 (Data Lama)",
-  period2: "📅 Periode 2 (Data Baru)",
+  period1: "Periode 1 (Data Lama)",
+  period2: "Periode 2 (Data Baru)",
 
   // Data card labels
   dataFollowing: "Data Following",
@@ -217,7 +271,7 @@ export const id: Translations = {
   statUnfollowed: "Yang Di-unfollow",
 
   // Search & sort
-  searchPlaceholder: '🔍 Cari username di "{label}"...',
+  searchPlaceholder: 'Cari username di "{label}"...',
   newest: "Terbaru",
   oldest: "Terlama",
   sortNewestTitle: "Terbaru → Terlama",
@@ -263,4 +317,31 @@ export const id: Translations = {
   // Language toggle
   langEn: "EN",
   langId: "ID",
+
+  // Tutorial
+  tutorialTitle: "Cara Menggunakan Analis Pengikut Instagram",
+  tutorialBtn: "Panduan",
+  tutorialStep1Title: "1. Download Data Instagram",
+  tutorialStep1Desc: "Minta data kamu dari fitur download Instagram:",
+  tutorialStep1_1: "Buka Instagram → Settings → Privacy and Security → Download Your Information",
+  tutorialStep1_2: "Pilih format JSON dan minta data kamu",
+  tutorialStep1_3: "Tunggu email dari Instagram (biasanya 1-2 hari)",
+  tutorialStep1_4: "Download dan extract file ZIP",
+  tutorialStep1_5: "Cari file followers_1.json (atau followers.json) dan following.json",
+  tutorialStep2Title: "2. Upload Data",
+  tutorialStep2Desc: "Kamu bisa upload dengan dua cara:",
+  tutorialStep2_1: 'Klik tombol "Upload JSON" dan pilih file kamu',
+  tutorialStep2_2: "Drag & drop file .json langsung ke area upload",
+  tutorialStep2_3: "Atau paste konten JSON mentah ke area teks",
+  tutorialStep3Title: "3. Pilih Mode",
+  tutorialStep3Desc: "Aplikasi ini punya dua mode analisis:",
+  tutorialStep3_single: "Mode Tunggal - Analisis hubungan following/followers saat ini. Lihat siapa yang tidak follow back, yang tidak kamu follow back, dan saling follow.",
+  tutorialStep3_compare: "Mode Perbandingan - Bandingkan dua periode untuk melacak follower baru, yang unfollow, following baru, dan yang di-unfollow.",
+  tutorialStep4Title: "4. Jelajahi Hasil",
+  tutorialStep4Desc: "Setelah data dimuat:",
+  tutorialStep4_1: "Jelajahi akun menggunakan tab kategori (Tidak Follow Back, Saling Follow, dll.)",
+  tutorialStep4_2: "Gunakan kolom pencarian untuk mencari username tertentu",
+  tutorialStep4_3: "Urutkan dari terbaru atau terlama menggunakan tombol sortir",
+  tutorialFooter: "Semua data diproses di browser kamu. Tidak ada data yang dikirim ke server.",
+  tutorialBack: "Kembali ke Aplikasi",
 };

@@ -1,6 +1,7 @@
 import { useState, useId } from "react";
 import logoSvg from "../assets/icons/logo.svg";
 import { useLang } from "../contexts/LangContext";
+import { HelpCircle, Trash2 } from "lucide-react";
 
 function FlagIcon({ country }: { country: "id" | "gb" }) {
   const uid = useId();
@@ -27,8 +28,10 @@ function FlagIcon({ country }: { country: "id" | "gb" }) {
 
 export function Navbar({
   onClearData,
+  onShowTutorial,
 }: {
   onClearData: () => void;
+  onShowTutorial: () => void;
 }) {
   const { t, lang, setLang } = useLang();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -46,6 +49,13 @@ export function Navbar({
       {/* Right: Desktop actions */}
       <div className="hidden items-center gap-2 sm:flex">
         <button
+          onClick={onShowTutorial}
+          className="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-indigo-500/30 to-violet-500/30 px-3 py-1.5 text-xs font-semibold text-indigo-200 ring-1 ring-indigo-400/30 transition-all hover:from-indigo-500/50 hover:to-violet-500/50 hover:text-white hover:ring-indigo-400/60"
+          title="Help / Tutorial"
+        >
+          <HelpCircle size={14} /> {t.tutorialBtn}
+        </button>
+        <button
           onClick={() => setLang(lang === "en" ? "id" : "en")}
           className="glass-btn inline-flex items-center gap-1 text-xs font-medium"
           title={lang === "en" ? "Bahasa Indonesia" : "English"}
@@ -57,7 +67,7 @@ export function Navbar({
           className="glass-btn inline-flex items-center gap-1 text-xs"
           title={t.clearDataTitle}
         >
-          🗑️ {t.clearData}
+          <Trash2 size={14} /> {t.clearData}
         </button>
       </div>
 
@@ -83,6 +93,12 @@ export function Navbar({
         <div className="absolute left-0 right-0 top-full mt-2 rounded-xl border border-white/10 bg-slate-900/95 p-3 shadow-xl backdrop-blur-xl sm:hidden">
           <div className="flex flex-col gap-2">
             <button
+              onClick={() => { onShowTutorial(); setMenuOpen(false); }}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/70 transition-all hover:bg-white/10 hover:text-white"
+            >
+              <HelpCircle size={14} /> {t.tutorialBtn}
+            </button>
+            <button
               onClick={() => { setLang(lang === "en" ? "id" : "en"); setMenuOpen(false); }}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-white/70 transition-all hover:bg-white/10 hover:text-white"
             >
@@ -92,7 +108,7 @@ export function Navbar({
               onClick={() => { onClearData(); setMenuOpen(false); }}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-rose-300/70 transition-all hover:bg-rose-500/10 hover:text-rose-300"
             >
-              🗑️ {t.clearData}
+              <Trash2 size={14} /> {t.clearData}
             </button>
           </div>
         </div>

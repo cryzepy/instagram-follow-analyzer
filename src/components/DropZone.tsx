@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useLang } from "../contexts/LangContext";
+import { Download } from "lucide-react";
 
 export function DropZone({
   onFile,
@@ -63,7 +64,7 @@ export function DropZone({
       {isDragging && (
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-xl border-2 border-dashed border-indigo-400/60 bg-indigo-500/25 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-2">
-            <span className="text-3xl">📥</span>
+            <Download size={32} className="mx-auto block text-white" />
             <p className="text-sm font-medium text-white">{t.dropJsonHere}</p>
           </div>
         </div>

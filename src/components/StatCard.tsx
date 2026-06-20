@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 export function StatCard({
   label,
   value,
@@ -6,7 +8,7 @@ export function StatCard({
 }: {
   label: string;
   value: number;
-  icon: string;
+  icon: ReactNode;
   highlight?: boolean;
 }) {
   return (
@@ -15,7 +17,7 @@ export function StatCard({
         highlight && value > 0 ? "ring-1 ring-rose-500/30" : ""
       }`}
     >
-      <div className="mb-1 text-2xl">{icon}</div>
+      <div className="mb-1 flex items-center justify-center text-white">{icon}</div>
       <div className="text-2xl font-bold text-white">{value.toLocaleString()}</div>
       <div className="text-xs text-white/50">{label}</div>
     </div>

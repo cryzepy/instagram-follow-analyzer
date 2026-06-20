@@ -9,7 +9,9 @@ import { UserCard } from "./components/UserCard";
 import { ConfirmModal } from "./components/ConfirmModal";
 import { JsonPreviewModal } from "./components/JsonPreviewModal";
 import { Navbar } from "./components/Navbar";
+import { Tutorial } from "./components/Tutorial";
 import { useLang } from "./contexts/LangContext";
+import { Camera, RefreshCw, User, Users, Handshake, AlertTriangle, Sparkles, HeartOff, Plus, Minus, Calendar, ArrowUp, Inbox, FolderOpen } from "lucide-react";
 
 const STORAGE_KEY = "ig-analyzer";
 
@@ -29,6 +31,7 @@ export default function App() {
 
   const [error, setError] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [previewJson, setPreviewJson] = useState("");
   const [sortNewest, setSortNewest] = useState(true);
   const [activeTab, setActiveTab] = useLocalStorage<TabKey>("activeTab", "notFollowBack", STORAGE_KEY);
@@ -143,7 +146,7 @@ export default function App() {
 
       <div className="relative mx-auto max-w-6xl px-4 py-4 sm:px-6 lg:px-10">
         {/* ── Navbar ─────────────────────────────────── */}
-        <Navbar onClearData={() => setShowConfirm(true)} />
+        <Navbar onClearData={() => setShowConfirm(true)} onShowTutorial={() => setShowTutorial(true)} />
 
         {/* ── Subtitle ───────────────────────────────── */}
         <p className="mb-6 text-center text-sm text-indigo-300/80">{t.subtitle}</p>
@@ -156,7 +159,7 @@ export default function App() {
               viewMode === "single" ? "bg-white/15 text-white shadow-lg shadow-black/20" : "text-white/50 hover:text-white/80"
             }`}
           >
-            📸 {t.singleMode}
+            <Camera size={18} className="inline-block align-middle" /> <span className="inline-block align-middle">{t.singleMode}</span>
           </button>
           <button
             onClick={() => { setViewMode("compare"); setSearch(""); setError(""); }}
@@ -164,7 +167,7 @@ export default function App() {
               viewMode === "compare" ? "bg-white/15 text-white shadow-lg shadow-black/20" : "text-white/50 hover:text-white/80"
             }`}
           >
-            🔄 {t.compareMode}
+            <RefreshCw size={18} className="inline-block align-middle" /> <span className="inline-block align-middle">{t.compareMode}</span>
           </button>
         </div>
 
@@ -172,13 +175,13 @@ export default function App() {
         {viewMode === "single" ? (
           <div className="mb-6 grid gap-6 lg:grid-cols-2">
             <DropZone onFile={setFollowingRaw}>
-              <DataCard label={t.dataFollowing} icon="👤" raw={followingRaw} data={following}
+              <DataCard label={t.dataFollowing} icon={<User size={14} />} raw={followingRaw} data={following}
                 onUpload={() => fileFollowingRef.current?.click()} onPreview={() => setPreviewJson(followingRaw)} />
               <input ref={fileFollowingRef} type="file" accept=".json,application/json" className="hidden"
                 onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowingRaw)} />
             </DropZone>
             <DropZone onFile={setFollowersRaw}>
-              <DataCard label={t.dataFollowers} icon="👥" raw={followersRaw} data={followers}
+              <DataCard label={t.dataFollowers} icon={<Users size={14} />} raw={followersRaw} data={followers}
                 onUpload={() => fileFollowersRef.current?.click()} onPreview={() => setPreviewJson(followersRaw)} />
               <input ref={fileFollowersRef} type="file" accept=".json,application/json" className="hidden"
                 onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowersRaw)} />
@@ -187,16 +190,16 @@ export default function App() {
         ) : (
           <div className="mb-6 space-y-6">
             <div className="glass-card rounded-xl p-5">
-              <h3 className="mb-4 text-center text-sm font-semibold text-white">{t.period1}</h3>
+              <h3 className="mb-4 text-center text-sm font-semibold text-white"><Calendar size={16} className="inline-block align-middle" /> <span className="inline-block align-middle">{t.period1}</span></h3>
               <div className="grid gap-4 lg:grid-cols-2">
                 <DropZone onFile={setFollowing1Raw}>
-                  <DataCard label={t.period1Following} icon="👤" raw={following1Raw} data={following1}
+                  <DataCard label={t.period1Following} icon={<User size={14} />} raw={following1Raw} data={following1}
                     onUpload={() => fileFollowing1Ref.current?.click()} onPreview={() => setPreviewJson(following1Raw)} />
                   <input ref={fileFollowing1Ref} type="file" accept=".json,application/json" className="hidden"
                     onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowing1Raw)} />
                 </DropZone>
                 <DropZone onFile={setFollowers1Raw}>
-                  <DataCard label={t.period1Followers} icon="👥" raw={followers1Raw} data={followers1}
+                  <DataCard label={t.period1Followers} icon={<Users size={14} />} raw={followers1Raw} data={followers1}
                     onUpload={() => fileFollowers1Ref.current?.click()} onPreview={() => setPreviewJson(followers1Raw)} />
                   <input ref={fileFollowers1Ref} type="file" accept=".json,application/json" className="hidden"
                     onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowers1Raw)} />
@@ -204,16 +207,16 @@ export default function App() {
               </div>
             </div>
             <div className="glass-card rounded-xl p-5">
-              <h3 className="mb-4 text-center text-sm font-semibold text-white">{t.period2}</h3>
+              <h3 className="mb-4 text-center text-sm font-semibold text-white"><Calendar size={16} className="inline-block align-middle" /> <span className="inline-block align-middle">{t.period2}</span></h3>
               <div className="grid gap-4 lg:grid-cols-2">
                 <DropZone onFile={setFollowing2Raw}>
-                  <DataCard label={t.period2Following} icon="👤" raw={following2Raw} data={following2}
+                  <DataCard label={t.period2Following} icon={<User size={14} />} raw={following2Raw} data={following2}
                     onUpload={() => fileFollowing2Ref.current?.click()} onPreview={() => setPreviewJson(following2Raw)} />
                   <input ref={fileFollowing2Ref} type="file" accept=".json,application/json" className="hidden"
                     onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowing2Raw)} />
                 </DropZone>
                 <DropZone onFile={setFollowers2Raw}>
-                  <DataCard label={t.period2Followers} icon="👥" raw={followers2Raw} data={followers2}
+                  <DataCard label={t.period2Followers} icon={<Users size={14} />} raw={followers2Raw} data={followers2}
                     onUpload={() => fileFollowers2Ref.current?.click()} onPreview={() => setPreviewJson(followers2Raw)} />
                   <input ref={fileFollowers2Ref} type="file" accept=".json,application/json" className="hidden"
                     onChange={(e) => handleFileUpload(e.target.files?.[0], setFollowers2Raw)} />
@@ -226,7 +229,7 @@ export default function App() {
         {/* ── Error ─────────────────────────────────── */}
         {error && (
           <div className="glass-card mb-6 rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-center text-sm text-rose-300">
-            ⚠️ {error}
+            <AlertTriangle size={14} className="inline-block align-middle shrink-0" /> <span className="inline-block align-middle">{error}</span>
           </div>
         )}
 
@@ -234,10 +237,10 @@ export default function App() {
         {viewMode === "single" && following.length > 0 && followers.length > 0 && (
           <>
             <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <StatCard label={t.statFollowing} value={following.length} icon="👤" />
-              <StatCard label={t.statFollowers} value={followers.length} icon="👥" />
-              <StatCard label={t.statMutuals} value={mutual.length} icon="🤝" />
-              <StatCard label={t.statNotFollowingBack} value={notFollowBack.length} icon="⚠️" highlight />
+              <StatCard label={t.statFollowing} value={following.length} icon={<User size={24} />} />
+              <StatCard label={t.statFollowers} value={followers.length} icon={<Users size={24} />} />
+              <StatCard label={t.statMutuals} value={mutual.length} icon={<Handshake size={24} />} />
+              <StatCard label={t.statNotFollowingBack} value={notFollowBack.length} icon={<AlertTriangle size={24} />} highlight />
             </div>
             <div className="glass-card mb-4 rounded-xl p-1 flex flex-wrap gap-1">
               {tabs.map((tab) => (
@@ -264,14 +267,14 @@ export default function App() {
                   }`}
                   title={sortNewest ? t.sortNewestTitle : t.sortOldestTitle}
                 >
-                  {sortNewest ? `🆕 ${t.newest}` : `📅 ${t.oldest}`}
+                  {sortNewest ? <><ArrowUp size={14} className="inline-block align-middle" /> <span className="inline-block align-middle">{t.newest}</span></> : <><Calendar size={14} className="inline-block align-middle" /> <span className="inline-block align-middle">{t.oldest}</span></>}
                 </button>
               </div>
             </div>
             <div className="glass-card rounded-xl p-4">
               {filteredData.length === 0 ? (
                 <div className="py-16 text-center text-white/40">
-                  <div className="mb-2 text-4xl">📭</div>
+                  <Inbox size={40} className="mb-2 mx-auto block text-white/40" />
                   <p className="text-sm">{search.trim() ? t.noMatchingUsername : t.emptyList}</p>
                 </div>
               ) : (
@@ -290,10 +293,10 @@ export default function App() {
         {viewMode === "compare" && following1.length > 0 && followers1.length > 0 && following2.length > 0 && followers2.length > 0 && (
           <>
             <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <StatCard label={t.statNewFollowers} value={newFollowers.length} icon="✨" highlight />
-              <StatCard label={t.statUnfollowers} value={unfollowers.length} icon="💔" />
-              <StatCard label={t.statNewFollowing} value={newFollowing.length} icon="➕" />
-              <StatCard label={t.statUnfollowed} value={unfollowing.length} icon="➖" />
+              <StatCard label={t.statNewFollowers} value={newFollowers.length} icon={<Sparkles size={24} />} highlight />
+              <StatCard label={t.statUnfollowers} value={unfollowers.length} icon={<HeartOff size={24} />} />
+              <StatCard label={t.statNewFollowing} value={newFollowing.length} icon={<Plus size={24} />} />
+              <StatCard label={t.statUnfollowed} value={unfollowing.length} icon={<Minus size={24} />} />
             </div>
             <div className="glass-card mb-4 rounded-xl p-1 flex flex-wrap gap-1">
               {compareTabs.map((tab) => (
@@ -320,14 +323,14 @@ export default function App() {
                   }`}
                   title={sortNewest ? t.sortNewestTitle : t.sortOldestTitle}
                 >
-                  {sortNewest ? `🆕 ${t.newest}` : `📅 ${t.oldest}`}
+                  {sortNewest ? <><ArrowUp size={14} className="inline-block align-middle" /> <span className="inline-block align-middle">{t.newest}</span></> : <><Calendar size={14} className="inline-block align-middle" /> <span className="inline-block align-middle">{t.oldest}</span></>}
                 </button>
               </div>
             </div>
             <div className="glass-card rounded-xl p-4">
               {filteredData.length === 0 ? (
                 <div className="py-16 text-center text-white/40">
-                  <div className="mb-2 text-4xl">📭</div>
+                  <Inbox size={40} className="mb-2 mx-auto block text-white/40" />
                   <p className="text-sm">{search.trim() ? t.noMatchingUsername : t.noChangesFound}</p>
                 </div>
               ) : (
@@ -345,20 +348,21 @@ export default function App() {
         {/* ── Empty states ───────────────────────────── */}
         {viewMode === "single" && following.length === 0 && followers.length === 0 && !error && (
           <div className="glass-card rounded-xl p-12 text-center">
-            <div className="mb-3 text-5xl">📂</div>
+            <FolderOpen size={48} className="mx-auto block text-white/40" />
             <p className="text-white/60" dangerouslySetInnerHTML={{ __html: t.uploadPromptSingle }} />
             <p className="mt-2 text-xs text-white/30">{t.uploadHint}</p>
           </div>
         )}
         {viewMode === "compare" && (following1.length === 0 || followers1.length === 0 || following2.length === 0 || followers2.length === 0) && !error && (
           <div className="glass-card rounded-xl p-12 text-center">
-            <div className="mb-3 text-5xl">🔄</div>
+            <RefreshCw size={48} className="mx-auto block text-white/40" />
             <p className="text-white/60" dangerouslySetInnerHTML={{ __html: t.uploadPromptCompare }} />
             <p className="mt-2 text-xs text-white/30">{t.uploadHintCompare}</p>
           </div>
         )}
 
         {/* ── Modals ────────────────────────────────── */}
+        {showTutorial && <Tutorial onClose={() => setShowTutorial(false)} />}
         {previewJson && <JsonPreviewModal json={previewJson} onClose={() => setPreviewJson("")} />}
         {showConfirm && (
           <ConfirmModal

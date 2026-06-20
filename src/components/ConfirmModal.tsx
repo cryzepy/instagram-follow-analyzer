@@ -1,4 +1,5 @@
 import { useLang } from "../contexts/LangContext";
+import { Trash2 } from "lucide-react";
 
 export function ConfirmModal({
   onConfirm,
@@ -19,7 +20,7 @@ export function ConfirmModal({
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="glass-card w-full max-w-sm rounded-xl p-6 text-center">
-          <div className="mb-3 text-4xl">🗑️</div>
+          <Trash2 size={36} className="mx-auto block text-rose-400" />
           <h3 className="mb-2 text-lg font-semibold text-white">{t.clearAllData}</h3>
           <p className="mb-6 text-sm text-white/60">{t.clearDataDesc}</p>
           <div className="flex gap-3">
